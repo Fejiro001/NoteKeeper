@@ -1,5 +1,6 @@
 package com.example.notekeeper;
 
+import android.content.ClipData;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -77,15 +78,20 @@ public class NoteActivity extends AppCompatActivity {
     }
 
     @Override
+    //Changes made to a note are made when back button is clicked
     protected void onPause() {
         super.onPause();
+        //If cancel is clicked
         if (mIsCancelling) {
             Log.i(TAG, "Cancelling note at position: " + mNotePosition);
+            //If it is a new note that is cancelled, remove completely
             if (mIsNewNote) {
                 DataManager.getInstance().removeNote(mNotePosition);
+                //If it was saved before, restore its previous values when cancelled
             } else {
                 storePreviousNoteValues();
             }
+            //If not cancelled, save the note
         } else {
             saveNote();
         }
@@ -121,6 +127,7 @@ public class NoteActivity extends AppCompatActivity {
     }
 
     private void readDisplayStateValues() {
+        //Goes to intent received and gets position of note to be displayed and stores in mNotePosition
         Intent intent = getIntent();
         mNotePosition = intent.getIntExtra(NOTE_POSITION, POSITION_NOT_SET);
         mIsNewNote = mNotePosition == POSITION_NOT_SET;
@@ -129,6 +136,7 @@ public class NoteActivity extends AppCompatActivity {
         }
 
         Log.i(TAG, "mNotePosition: " + mNotePosition);
+        //Gets note from data manager that corresponds to the position and puts into the member field mNote
         mNote = DataManager.getInstance().getNotes().get(mNotePosition);
     }
 
@@ -159,9 +167,39 @@ public class NoteActivity extends AppCompatActivity {
         } else if (id == R.id.action_cancel) {
             mIsCancelling = true;
             finish();
+        } else if (id == R.id.action_next) {
+            moveNext();
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem item =menu.findItem(R.id.action_next);
+        //last note index to the notes
+        int lastNoteIndex =DataManager.getInstance().getNotes().size() - 1;
+        //check if current note position is the last note in the list
+        //If not in the last note, it will be true and enabled
+        //If the last note, it will be false and disabled
+        item.setEnabled(mNotePosition < lastNoteIndex);
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    private void moveNext() {
+        //Save any changes made to note before moving next
+        saveNote();
+
+        //Get position of the next note and get the note from the data manager
+        ++mNotePosition;
+        mNote = DataManager.getInstance().getNotes().get(mNotePosition);
+
+        //Save original values of the note
+        saveOriginalNoteValues();
+        //Display the note gotten
+        displayNote(mSpinnerCourses, mTextNoteTitle, mTextNoteText);
+
+        invalidateOptionsMenu();
     }
 
     private void sendEmail() {
