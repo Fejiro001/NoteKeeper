@@ -26,7 +26,7 @@ public class NoteRecyclerAdapter extends RecyclerView.Adapter<NoteRecyclerAdapte
 
     /*In other to create views from the layout resource, we need to use the class LayoutInflater
     and LayoutInflater's are created from a context
-    * */
+    */
     public NoteRecyclerAdapter(Context context, List<NoteInfo> notes) {
         mContext = context;
         mNotes = notes;
@@ -74,8 +74,8 @@ public class NoteRecyclerAdapter extends RecyclerView.Adapter<NoteRecyclerAdapte
         */
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            mTextCourse = (TextView) itemView.findViewById(R.id.text_course);
-            mTextTitle = (TextView) itemView.findViewById(R.id.text_title);
+            mTextCourse = itemView.findViewById(R.id.text_course);
+            mTextTitle = itemView.findViewById(R.id.text_title);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

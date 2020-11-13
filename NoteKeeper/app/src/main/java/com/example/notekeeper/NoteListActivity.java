@@ -44,7 +44,7 @@ public class NoteListActivity extends AppCompatActivity {
 
     private void initializeDisplayContent() {
         //Get reference to recycler view that was loaded by our layout resource
-        final RecyclerView recyclerNotes = (RecyclerView) findViewById(R.id.list_notes);
+        final RecyclerView recyclerNotes = findViewById(R.id.list_notes);
         //Instance of layout manager
         final LinearLayoutManager notesLayoutManager = new LinearLayoutManager(this);
         //Associated the layout manager to the recycler view

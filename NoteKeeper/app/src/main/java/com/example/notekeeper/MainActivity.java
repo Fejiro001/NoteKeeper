@@ -1,10 +1,14 @@
 package com.example.notekeeper;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
+import android.widget.TextView;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
@@ -15,6 +19,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -28,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private LinearLayoutManager mNotesLayoutManager;
     private CourseRecyclerAdapter mCourseRecyclerAdapter;
     private GridLayoutManager mCoursesLayoutManager;
+    private NoteKeeperOpenHelper mDbOpenHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +41,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        mDbOpenHelper = new NoteKeeperOpenHelper(this);
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -49,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         initializeDisplayContent();
@@ -60,14 +68,45 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onResume();
         //Anytime our NoteListActivity is resumed, the data set is refreshed
         mNoteRecyclerAdapter.notifyDataSetChanged();
+        updateNavHeader();
     }
 
+    @Override
+    protected void onDestroy() {
+        //closes helper on activity destruction
+        mDbOpenHelper.close();
+        super.onDestroy();
+    }
+
+    private void updateNavHeader() {
+        //Reference to navigation view
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        //Reference to navigation view header
+        View headerView = navigationView.getHeaderView(0);
+        //Reference to each of the textViews using the headerView
+        TextView textUserName = headerView.findViewById(R.id.text_user_name);
+        TextView textEmailAddress = headerView.findViewById(R.id.text_email_address);
+
+        //To interact with preference systems with reference of type SharedPreferences
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        //Get the values
+        String userName = pref.getString("user_display_name", "Your Name");
+        String emailAddress = pref.getString("user_email_address", "yourname@yourhost.com");
+
+        textUserName.setText(userName);
+        textEmailAddress.setText(emailAddress);
+    }
+
+    //Method that sets up our recyclerview, layout managers and adapters
     private void initializeDisplayContent() {
+        //Calling the method from DataManager
+        DataManager.loadFromDatabase(mDbOpenHelper);
         //Get reference to recycler view that was loaded by our layout resource
-        mRecyclerItems = (RecyclerView) findViewById(R.id.list_items);
+        mRecyclerItems = findViewById(R.id.list_items);
         //Instance of layout manager
         mNotesLayoutManager = new LinearLayoutManager(this);
-        mCoursesLayoutManager = new GridLayoutManager(this, 2);
+        mCoursesLayoutManager = new GridLayoutManager(this,
+                getResources().getInteger(R.integer.course_grid_span));
 
         //Get notes to be displayed within the RecyclerView
         //Create instance of DataManager
@@ -78,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //Get courses to be displayed within the RecyclerView
         //Create instance of DataManager
         List<CourseInfo> courses = DataManager.getInstance().getCourses();
-        //Create instance of NoteRecyclerAdapter
+        //Create instance of CourseRecyclerAdapter
         mCourseRecyclerAdapter = new CourseRecyclerAdapter(this, courses);
 
         displayNotes();
@@ -114,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -138,6 +177,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
 
@@ -155,18 +195,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if (id == R.id.nav_courses) {
             displayCourses();
         } else if (id == R.id.nav_share) {
-            handleSelection("Don't you think you've shared enough");
+//            handleSelection(R.string.nav_share_message);
+            handleShare();
         } else if (id == R.id.nav_send) {
-            handleSelection("Send");
+            handleSelection(R.string.nav_send_message);
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
-    private void handleSelection(String message) {
+    private void handleShare() {
         View view = findViewById(R.id.list_items);
-        Snackbar.make(view, message, Snackbar.LENGTH_LONG).show();
+        Snackbar.make(view, "Share to - " +
+                PreferenceManager.getDefaultSharedPreferences(this).getString("user_favorite_social", "http://twitter.com"),
+                Snackbar.LENGTH_LONG).show();
+    }
+
+    private void handleSelection(int message_id) {
+        View view = findViewById(R.id.list_items);
+        Snackbar.make(view, message_id, Snackbar.LENGTH_LONG).show();
     }
 }
