@@ -1,0 +1,25 @@
+<resources>
+    <!-- Reply Preference -->
+    <string-array name="reply_entries">
+        <item>Reply</item>
+        <item>Reply to all</item>
+    </string-array>
+
+    <string-array name="reply_values">
+        <item>reply</item>
+        <item>reply_all</item>
+    </string-array>
+
+    <!-- Favorite Social Preference -->
+    <string-array name="pref_entries_favorite_social">
+        <item>Twitter</item>
+        <item>Facebook</item>
+        <item>LinkedIn</item>
+    </string-array>
+
+    <string-array name="pref_values_favorite_social">
+        <item>http://twitter.com</item>
+        <item>http://facebook.com</item>
+        <item>http://linkedIn.com</item>
+    </string-array>
+</resources>
