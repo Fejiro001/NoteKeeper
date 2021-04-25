@@ -14,8 +14,8 @@ import java.util.Objects;
 public class DataManager {
     private static DataManager ourInstance = null;
 
-    private List<CourseInfo> mCourses = new ArrayList<>();
-    private List<NoteInfo> mNotes = new ArrayList<>();
+    private final List<CourseInfo> mCourses = new ArrayList<>();
+    private final List<NoteInfo> mNotes = new ArrayList<>();
 
     public static DataManager getInstance() {
         if(ourInstance == null) {

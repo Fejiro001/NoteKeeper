@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
  */
 
 public class DatabaseDataWorker {
-    private SQLiteDatabase mDb;
+    private final SQLiteDatabase mDb;
 
     public DatabaseDataWorker(SQLiteDatabase db) {
         mDb = db;

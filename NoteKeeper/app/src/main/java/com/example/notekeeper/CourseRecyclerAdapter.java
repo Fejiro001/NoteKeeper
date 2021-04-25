@@ -74,7 +74,7 @@ public class CourseRecyclerAdapter extends RecyclerView.Adapter<CourseRecyclerAd
         */
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            mTextCourse = (TextView) itemView.findViewById(R.id.text_course);
+            mTextCourse = itemView.findViewById(R.id.text_course);
 
             //When a course card is clicked
             itemView.setOnClickListener(new View.OnClickListener() {
